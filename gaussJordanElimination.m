@@ -19,14 +19,8 @@ function [coefficients, results, isSingular] = elimination(coefficients, results
             return;
         end
         % forward elimination
-        for i = row + 1 : n
-            factor = coefficients(i, row) / coefficients(row, row);
-            for j = row + 1 : n
-                coefficients(i, j) = coefficients(i, j) - factor * coefficients(row, j);
-            end
-            results(i) = results(i) - factor * results(row);
-        end
-        for i = row - 1 : -1 : 1
+        range = 1 : n;
+        for i = range(range ~= row)
             factor = coefficients(i, row) / coefficients(row, row);
             for j = row + 1 : n
                 coefficients(i, j) = coefficients(i, j) - factor * coefficients(row, j);

@@ -19,7 +19,6 @@ function [X, isSingular] = gaussElimination(coefficients, results, n, tolerance)
     if ~isSingular
         [X] = backwardSubstitution(coefficients, results, n);
     end
-    disp(isSingular);
 end
 
 function [coefficients, results, isSingular] = forwardElimination(coefficients, results, scaledFactors, n, tolerance)

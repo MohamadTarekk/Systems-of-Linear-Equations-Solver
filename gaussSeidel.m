@@ -1,10 +1,12 @@
-function [X, iterations, data] = gaussSeidel(coefficients, results, initialGuesses, n, maxIterations, tolerance)
+function [X, iterations, data, precision] = gaussSeidel(coefficients, results, initialGuesses, n, maxIterations, tolerance)
     data = zeros(maxIterations + 1, n);
     for i = 1 : n
         data(1, i) = initialGuesses(i);
     end
     index = ones(1, n);
     X = zeros(1, n);
+    precision = zeros(maxIterations, n);
+    tolerance = tolerance * 100;
     
     iterations = maxIterations;
     for i = 1 : maxIterations
@@ -17,8 +19,8 @@ function [X, iterations, data] = gaussSeidel(coefficients, results, initialGuess
             end
             index(j) = index(j) + 1;
             data(index(j), j) = (results(j) - sum) / coefficients(j, j);
-            error = abs( ( data(index(j), j) - data(index(j) - 1, j) ) / data(index(j), j) );
-            stop = stop && (error < tolerance);
+            precision(i, j) = abs( ( data(index(j), j) - data(index(j) - 1, j) ) / data(index(j), j) ) * 100;
+            stop = stop && (precision(i, j) < tolerance);
         end
                 
         if stop

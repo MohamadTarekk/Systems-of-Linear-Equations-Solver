@@ -1,33 +1,33 @@
-function [X, L, U, B, isSingular] = LUdecomposition(A, B, n, tolerance)
-    % Assume: AX = LUX = B
-    % A: 2-D (Sqaure) matrix of Coefficients
-    % B: 1-D vector that contains RHS of the equations
+function [X, isSingular] = LUdecomposition(coefficients, results, n, tolerance)
+    % Assume: AX = LUX = results
+    % coefficients: 2-D (Sqaure) matrix of Coefficients
+    % results: 1-D vector that contains RHS of the equations
     % n: Dimension of the system of equations
     % X: 1-D vector to store the results
     % tolerance: the smallest allowable scaled pivot
     % isSingular: returns true if matrix is singular, ie not solvable
-    [scalingFactors] = getScalingFactors(A, n);
-    [L, U, B, isSingular] = decompose(A, B, n, scalingFactors, tolerance);
+    [scalingFactors] = getScalingFactors(coefficients, n);
+    [L, U, results, isSingular] = decompose(coefficients, results, n, scalingFactors, tolerance);
     if(isSingular)
         X = [];
     else
-        [X] = substitute(L, U, B, n);
+        [X] = substitute(L, U, results, n);
     end
 end
 
-function [scalingFactors] = getScalingFactors(a, n)
+function [scalingFactors] = getScalingFactors(coefficients, n)
     scalingFactors = zeros(n, 1);
     for i = 1 : n
-        scalingFactors(i) = abs(a(i, 1));
+        scalingFactors(i) = abs(coefficients(i, 1));
         for j = 2 : n
-            if abs(a(i, j)) > scalingFactors(i)
-                scalingFactors(i) = abs(a(i, j));
+            if abs(coefficients(i, j)) > scalingFactors(i)
+                scalingFactors(i) = abs(coefficients(i, j));
             end
         end
     end
 end
 
-function [L, A, B, isSingular] = decompose(A, B, n, scalingFactors, tolerance)
+function [L, coefficients, results, isSingular] = decompose(coefficients, results, n, scalingFactors, tolerance)
     % use A to store new values of U
 
     % initialize L matrix
@@ -38,32 +38,32 @@ function [L, A, B, isSingular] = decompose(A, B, n, scalingFactors, tolerance)
     % decompose A into U and L
     for row = 1 : n - 1
         % apply partial pivoting
-        [L, A, B, scalingFactors] =  pivot(L, A, B, scalingFactors, n, row);
+        [L, coefficients, results, scalingFactors] =  pivot(L, coefficients, results, scalingFactors, n, row);
         % check for sigularity
-        if abs(A(row, row) / scalingFactors(row))  < tolerance
+        if abs(coefficients(row, row) / scalingFactors(row))  < tolerance
             isSingular = true;
             return;
         end
         % forward elimination for A to get U
         % the multiplied factors to get U from A are used to populate L
         for i = row + 1 : n
-            factor = A(i, row) / A(row, row);
+            factor = coefficients(i, row) / coefficients(row, row);
             for j = row + 1 : n
-                A(i, j) = A(i, j) - factor * A(row, j);
+                coefficients(i, j) = coefficients(i, j) - factor * coefficients(row, j);
             end
-            A(i,row) = A(i,row) - factor * A(row, row);
+            coefficients(i,row) = coefficients(i,row) - factor * coefficients(row, row);
             L(i, row) = factor;
         end
     end
     % check for sigularity
-    if abs(A(n, n) / scalingFactors(n)) < tolerance
+    if abs(coefficients(n, n) / scalingFactors(n)) < tolerance
         isSingular = true;
         return;
     end
     isSingular = false;
 end
 
-function [L, U, B, scalingFactors] =  pivot(L, U, B, scalingFactors, n, row)
+function [L, U, results, scalingFactors] =  pivot(L, U, results, scalingFactors, n, row)
     pivotRow = row;
     % Find the largest scaled coefficient in column k
     max = abs(U(row, row) / scalingFactors(row));
@@ -88,10 +88,10 @@ function [L, U, B, scalingFactors] =  pivot(L, U, B, scalingFactors, n, row)
             L(pivotRow, j) = L(row, j);
             L(row, j) = temp;
         end
-        % swap B
-        temp = B(pivotRow);
-        B(pivotRow) = B(row);
-        B(row) = temp;
+        % swap results
+        temp = results(pivotRow);
+        results(pivotRow) = results(row);
+        results(row) = temp;
         % swap scaling factors
         temp = scalingFactors(pivotRow);
         scalingFactors(pivotRow) = scalingFactors(row);
@@ -99,20 +99,20 @@ function [L, U, B, scalingFactors] =  pivot(L, U, B, scalingFactors, n, row)
     end
 end
 
-function [X] = substitute(L, U, B, n)
-    [Y] = forwardSubstitute(L, B, n);
+function [X] = substitute(L, U, results, n)
+    [Y] = forwardSubstitute(L, results, n);
     [X] = backwardSubstitute(U, Y, n);
 end
 
-function [Y] = forwardSubstitute(L, B, n)
+function [Y] = forwardSubstitute(L, results, n)
     Y = zeros(n, 1);
-    Y(1) = B(1) / L(1,1);
+    Y(1) = results(1) / L(1,1);
     for i = 2 : n
         sum = 0;
         for j = 1 : i - 1
             sum = sum + L(i, j) * Y(j);
         end
-        Y(i) = (B(i) - sum) / L(i,i);
+        Y(i) = (results(i) - sum) / L(i,i);
     end
 end
 

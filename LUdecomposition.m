@@ -1,4 +1,4 @@
-function [X, isSingular] = LUdecomposition(A, B, n, tolerance)
+function [X, L, U, B, isSingular] = LUdecomposition(A, B, n, tolerance)
     % Assume: AX = LUX = B
     % A: 2-D (Sqaure) matrix of Coefficients
     % B: 1-D vector that contains RHS of the equations
@@ -51,12 +51,12 @@ function [L, A, B, isSingular] = decompose(A, B, n, scalingFactors, tolerance)
             for j = row + 1 : n
                 A(i, j) = A(i, j) - factor * A(row, j);
             end
-            B(i) = B(i) - factor * B(row);
+            A(i,row) = A(i,row) - factor * A(row, row);
             L(i, row) = factor;
         end
     end
     % check for sigularity
-    if abs(coefficients(n, n) / scalingFactors(n)) < tolerance
+    if abs(A(n, n) / scalingFactors(n)) < tolerance
         isSingular = true;
         return;
     end

@@ -1,4 +1,4 @@
-function [X, L, U, B, isSingular] = LUdecomposition(A, B, n, tolerance)
+function [X, isSingular] = LUdecomposition(A, B, n, tolerance)
     % Assume: AX = LUX = B
     % A: 2-D (Sqaure) matrix of Coefficients
     % B: 1-D vector that contains RHS of the equations

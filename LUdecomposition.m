@@ -15,13 +15,13 @@ function [X, isSingular] = LUdecomposition(A, B, n, tolerance)
     end
 end
 
-function [scalingFactors] = getScalingFactors(a, n)
+function [scalingFactors] = getScalingFactors(A, n)
     scalingFactors = zeros(n, 1);
     for i = 1 : n
-        scalingFactors(i) = abs(a(i, 1));
+        scalingFactors(i) = abs(A(i, 1));
         for j = 2 : n
-            if abs(a(i, j)) > scalingFactors(i)
-                scalingFactors(i) = abs(a(i, j));
+            if abs(A(i, j)) > scalingFactors(i)
+                scalingFactors(i) = abs(A(i, j));
             end
         end
     end

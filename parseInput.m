@@ -19,7 +19,7 @@ function [error, n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsM
         if epsilon == -1
             epsilon = 0.00001;
         else
-            epsilon = str2double(epsilon);
+%             epsilon = str2double(epsilon);
         end
     end
     

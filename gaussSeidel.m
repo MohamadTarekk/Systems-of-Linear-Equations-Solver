@@ -1,4 +1,4 @@
-function [X, iterations, data, precision] = gaussSeidel(coefficients, results, initialGuesses, n, maxIterations, tolerance)
+function [X, iterations, data] = gaussSeidel(coefficients, results, initialGuesses, n, maxIterations, tolerance)
     data = zeros(maxIterations + 1, n);
     for i = 1 : n
         data(1, i) = initialGuesses(i);
@@ -32,4 +32,14 @@ function [X, iterations, data, precision] = gaussSeidel(coefficients, results, i
     for i = 1 : n
         X(i) = data(iterations + 1, i);
     end
+    
+    % remove initial guess row (first row)
+    data(1,:) = [];
+    % concatinate the precision
+    result = zeros(iterations, 2 * n);
+    for i = 1 : n
+        result(1:iterations,2 * i - 1) = data(1:iterations,i);
+        result(1:iterations,2 * i) = precision(1:iterations,i);
+    end
+    data = result;
 end

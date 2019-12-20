@@ -4,7 +4,7 @@ function [error, n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsM
     % n: number of equations (also number of variables)
 
     % parse n
-    n = str2double(n);
+%     n = str2double(n);
     % parse iterative method parameters
     if isIterative
         % parse Initial Conditions
@@ -13,7 +13,7 @@ function [error, n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsM
         if max_iter == -1
             max_iter = 50;
         else
-            max_iter = str2double(max_iter);
+%             max_iter = str2double(max_iter);
         end
         % parse Maximum Number of Iterations
         if epsilon == -1

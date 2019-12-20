@@ -11,6 +11,10 @@ a b c                   ->  space separated variable symbols
 100                     ->  maximum number of iterations          |--> only in Gauss Seidel method
 1e-05                   ->  minimum allowable relative error     /
 %}
+    
+    initialConditions = '';
+    max_iter = 50;
+    epsilon = 1e-5;
 
     % open file
     filter = {'.txt'};
@@ -29,7 +33,6 @@ a b c                   ->  space separated variable symbols
     end
     % read number of equations
     n = fgetl(fid);
-    n = str2double(n);
     % read method name
     method = fgetl(fid);
     % read symbols

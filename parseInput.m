@@ -1,21 +1,42 @@
-function [coeffsMatrix, resultsMatrix, symbols, error] = parseInput(symbols, equations, n)
+function [error, n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsMatrix, symbols] = parseInput(n, isIterative, initialConditions, max_iter, epsilon, equations, symbols)
     % symbols: symbols fo variables in the input
-    % str: input functions as array of strings
+    % equations: input functions as array of strings
     % n: number of equations (also number of variables)
 
+    % parse n
+    n = str2double(n);
+    % parse iterative method parameters
+    if isIterative
+        % parse Initial Conditions
+        [initialConditions] = str2num(initialConditions); %#ok<ST2NM>
+        % parse Maximum Number of Iterations
+        if max_iter == -1
+            max_iter = 50;
+        else
+            max_iter = str2double(max_iter);
+        end
+        % parse Maximum Number of Iterations
+        if epsilon == -1
+            epsilon = 0.00001;
+        else
+            epsilon = str2double(epsilon);
+        end
+    end
+    
+    % initialize error to 0, ie no error
+    error = 0;
     % split symbols
     symbols = split(symbols, ' ');
     if n ~= length(symbols)
-        error = true;
-        coeffsMatrix = [];
-        resultsMatrix = [];
+        error = 'Symbols are missing';
+        [n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsMatrix, symbols] = setDefaults();
         return;
     end
-    
+    % parse equations
+    equations = splitlines(equations);
     % initialize matrices
     coeffsMatrix = zeros(n);
     resultsMatrix = zeros(n, 1);
-    
     % fill the matrices
     for row = 1 : n
         % create symbolic function
@@ -24,7 +45,8 @@ function [coeffsMatrix, resultsMatrix, symbols, error] = parseInput(symbols, equ
         [coefficients,terms] = coeffs(symbolic_expression);
         % add coefficients to the matrices
         [coeffsMatrix, resultsMatrix, error] = appendCoeffs(coeffsMatrix, resultsMatrix, symbols, coefficients, terms, row);
-        if(error)
+        if(error ~= 0)
+            [n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsMatrix, symbols] = setDefaults();
             return;
         end
     end    
@@ -44,11 +66,21 @@ function [coeffsMatrix, resultsMatrix, error] = appendCoeffs(coeffsMatrix, resul
         end
     end
     % check if there are unused terms, ie invalid symbols in the equations
-    error = false;
+    error = 0;
     for column = 1 : length(terms)
         if ~isequaln(sym('0'), terms(j))
-            error = true;
-            break;
+            error = 'Unknown variables were found in the equations';
+            return;
         end
-    end    
+    end
+end
+
+function [n, initialConditions, max_iter, epsilon, coeffsMatrix, resultsMatrix, symbols] = setDefaults()
+    n = [];
+    initialConditions = [];
+    max_iter = [];
+    epsilon = [];
+    coeffsMatrix = [];
+    resultsMatrix = [];
+    symbols = [];
 end

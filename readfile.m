@@ -12,18 +12,49 @@ a b c                   ->  space separated variable symbols
 1e-05                   ->  minimum allowable relative error     /
 %}
 
-% open file
-filter = {'.txt'};
-[name, path] = uigetfile(filter);
-directory = [path name];
-if length(directory) == 2
-    fid = -1;
-else
-    fid = fopen(directory);
+    % open file
+    filter = {'.txt'};
+    [name, path] = uigetfile(filter);
+    directory = [path name];
+    if length(directory) == 2
+        fid = -1;
+    else
+        fid = fopen(directory);
+    end
+    % check if file exists
+    if (fid < 0)
+        error = 'You did not choose a file';
+        [n, method, symbols, equations, initialConditions, max_iter, epsilon, isIterative] = setDefaults();
+        return;
+    end
+    % read number of equations
+    n = fgetl(fid);
+    % read method name
+    method = fgetl(fid);
+    % read symbols
+    symbols = fgetl(fid);
+    % read equations
+    [equations, error] = readEquations(n, fid);
+    if error ~= 0
+        [n, method, symbols, equations, initialConditions, max_iter, epsilon, isIterative] = setDefaults();
+        return;
+    end
+    equations = compose(equations);     % convert \n to actual newlines
+    % read special inputs for Gauss-Seidel Method
+    isIterative = false;
+    if strcmp(method, 'Gauss-Seidel Method') || strcmp(method, 'All')
+        initialConditions = fgetl(fid);
+        max_iter = fgetl(fid);
+        epsilon = fgetl(fid);
+        isIterative = true;
+    end
+    % close file
+    fclose(fid);
+    % No errors
+    error = 0;
 end
-% check if file exists
-if (fid < 0)
-    error = 'You did not choose a file';
+
+function [n, method, symbols, equations, initialConditions, max_iter, epsilon, isIterative] = setDefaults()
     n = '';
     method = '';
     symbols = '';
@@ -31,61 +62,34 @@ if (fid < 0)
     initialConditions = '';
     max_iter = '';
     epsilon = '';
-    return
-end
-% read number of equations
-n = fgetl(fid);
-% read method name
-method = fgetl(fid);
-% read symbols
-symbols = fgetl(fid);
-% read equations
-equations = fgetl(fid);
-for i = 2 : n
-    equations = equations + "\n" + fgetl(fid);
-end
-compose(equations);     % convert \n to actual newlines
-% read special inputs for Gauss-Seidel Method
-isIterative = false;
-if strcmp(method, 'Gauss-Seidel Method') || strcmp(method, 'All')
-    initialConditions = fgetl(fid);
-    max_iter = fgetl(fid);
-    epsilon = fgetl(fid);
-    isIterative = true;
-end
-% close file
-fclose(fid);
-
-% validate epsilon
-if epsilon == -1
-    epsilon = '0.00001';
-else
-    es = str2num(epsilon);
-    if length(es) ~= 1
-        error = 'Invalid accuracy format';
-        return
-    end
-    if (es < 0) || (es > 100)
-        error = 'Invalid accuracy format';
-        return
-    end
-end
-% validate max_iter
-if max_iter == -1
-    max_iter = '50';
-else
-    i = str2num(epsilon);
-    if length(i) ~= 1
-        error = 'Invalid number of maximum iterations';
-        return
-    end
-    if i < 1
-        error = 'Invalid number of maximum iterations';
-        return
-    end
+    isIterative = '';
 end
 
-% No errors
-error = 0;
-
+function [equations, error] = readEquations(n, fid)
+    error = 0;
+    count = str2double(n);
+    if(~isequaln(count, NaN) && length(count)==1)
+        if count < 1
+            error = 'Invalid format for Number of Equations';
+            return;
+        end
+        equations = fgetl(fid);
+        if equations == -1
+            error = 'Equations are missing';
+            return;
+        end
+        if count ~= 1
+            for i = 2 : count
+                eqn = fgetl(fid);
+                if eqn == -1
+                    error = sprintf('%d equations are missing', count-i);
+                    return;
+                end
+                equations = equations + "\n" + eqn;
+            end
+        end
+    else
+        error = 'Invalid format for Number of Equations';
+        return;
+    end
 end

@@ -1,4 +1,4 @@
-function [error, n, method, symbols, equations, initialConditions, max_iter, epsilon] = readfile()
+function [error, n, method, symbols, equations, initialConditions, max_iter, epsilon, isIterative] = readfile()
 %{
 file format:
 3                       ->  number of equations (also number of variables)
@@ -24,7 +24,7 @@ end
 % check if file exists
 if (fid < 0)
     error = 'You did not choose a file';
-    n = ''
+    n = '';
     method = '';
     symbols = '';
     equations = '';
@@ -46,10 +46,12 @@ for i = 2 : n
 end
 compose(equations);     % convert \n to actual newlines
 % read special inputs for Gauss-Seidel Method
-if strcmp(method, 'Gauss-Seidel Method')
+isIterative = false;
+if strcmp(method, 'Gauss-Seidel Method') || strcmp(method, 'All')
     initialConditions = fgetl(fid);
     max_iter = fgetl(fid);
     epsilon = fgetl(fid);
+    isIterative = true;
 end
 % close file
 fclose(fid);

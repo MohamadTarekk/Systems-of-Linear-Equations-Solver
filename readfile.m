@@ -29,6 +29,7 @@ a b c                   ->  space separated variable symbols
     end
     % read number of equations
     n = fgetl(fid);
+    n = str2double(n);
     % read method name
     method = fgetl(fid);
     % read symbols

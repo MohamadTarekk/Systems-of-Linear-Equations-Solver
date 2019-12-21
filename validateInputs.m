@@ -43,8 +43,11 @@ epsilon             ->  minimum allowable relative error
             error = 'Invalid format for Initial Conditions';
             return;
         end
-        if ~(length(initialConditions) == n)
+        if length(initialConditions) < n
             error = 'Initial Conditions are missing';
+            return;
+        elseif length(initialConditions) > n
+            error = 'Initial Conditions violate Number of Equations bound';
             return;
         end
         % validate Maximum Number of Iterations

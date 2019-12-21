@@ -12,10 +12,6 @@ a b c                   ->  space separated variable symbols
 1e-05                   ->  minimum allowable relative error     /
 %}
     
-    initialConditions = '';
-    max_iter = 50;
-    epsilon = 1e-5;
-
     % open file
     filter = {'.txt'};
     [name, path] = uigetfile(filter);
@@ -45,12 +41,16 @@ a b c                   ->  space separated variable symbols
     end
     equations = compose(equations);     % convert \n to actual newlines
     % read special inputs for Gauss-Seidel Method
-    isIterative = false;
     if strcmp(method, 'Gauss-Seidel Method') || strcmp(method, 'All')
         initialConditions = fgetl(fid);
         max_iter = fgetl(fid);
         epsilon = fgetl(fid);
         isIterative = true;
+    else
+        initialConditions = '';
+        max_iter = '50';
+        epsilon = '0.00001';
+        isIterative = false;
     end
     % close file
     fclose(fid);
@@ -64,8 +64,8 @@ function [n, method, symbols, equations, initialConditions, max_iter, epsilon, i
     symbols = '';
     equations = '';
     initialConditions = '';
-    max_iter = '';
-    epsilon = '';
+    max_iter = '50';
+    epsilon = '0.00001';
     isIterative = '';
 end
 
@@ -77,19 +77,31 @@ function [equations, error] = readEquations(n, fid)
             error = 'Invalid format for Number of Equations';
             return;
         end
-        equations = fgetl(fid);
-        if equations == -1
-            error = 'Equations are missing';
+        equations = "";
+        eqn = fgetl(fid);
+        if isequal(eqn, -1) || strcmp(eqn, 'Iterative parameters')
+            error = sprintf('Equations are missing');
             return;
         end
-        if count ~= 1
-            for i = 2 : count
-                eqn = fgetl(fid);
-                if eqn == -1
-                    error = sprintf('%d equations are missing', count-i);
-                    return;
-                end
-                equations = equations + "\n" + eqn;
+        equations = equations + eqn;
+        i = 2;
+        while (i <= count) && ~strcmp(eqn, 'Iterative parameters')
+            eqn = fgetl(fid);
+            if eqn == -1
+                error = sprintf('%d equations are missing', count-i);
+                return;
+            end
+            equations = equations + "\n" + eqn;
+            i = i + 1;
+        end
+        if (i <= count) || strcmp(eqn, 'Iterative parameters')
+            error = sprintf('%d equations are missing', count-i+2);
+            return;
+        else    % all equations were read -> read the extra line indicating Iterative parameters
+            eqn = fgetl(fid);
+            if ~strcmp(eqn, 'Iterative parameters') && ~isequal(eqn, -1)
+                error = sprintf('Invalid format for Initial parameters');
+                return;
             end
         end
     else
